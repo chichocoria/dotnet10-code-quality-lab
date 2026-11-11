@@ -1,14 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <PropertyGroup>
+      <TargetFramework>net10.0</TargetFramework>
+      <Nullable>enable</Nullable>
+      <ImplicitUsings>enable</ImplicitUsings>
+      
+      <!-- Configuración para Laboratorio de Calidad de Código -->
+      <EnableNETAnalyzers>true</EnableNETAnalyzers>
+      <AnalysisLevel>10.0-all</AnalysisLevel>
+      <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     
-    <!-- Configuración para Laboratorio de Calidad de Código -->
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>10.0-all</AnalysisLevel>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-  </PropertyGroup>
+      <!-- Generación SARIF v2.1.0 garantizada -->
+      <ErrorLog>$(MSBuildThisFileDirectory)../../roslyn-analysis.sarif,version=2.1</ErrorLog>
+    </PropertyGroup>
 
 </Project>
