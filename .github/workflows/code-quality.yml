@@ -9,10 +9,45 @@ on:
 
 permissions:
   contents: read
-  security-events: write
+  security-events: write # Permite publicar hallazgos SARIF en la pestaña Security
   actions: read
 
 jobs:
+  # ----------------------------------------------------
+  # Job 1: Detección de Secretos y Credenciales Expuestas
+  # ----------------------------------------------------
+  scan-secrets:
+    name: "Gitleaks Secret Scan"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Descarga todo el árbol de commits para revisar historial
+
+      - name: Run Gitleaks and export SARIF
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/path" \
+            zricethezav/gitleaks:latest \
+            detect \
+            --source="/path" \
+            --report-format=sarif \
+            --report-path="/path/gitleaks.sarif" \
+            --redact \
+            --exit-code=0 # En modo lab usamos 0 para permitir que siempre suba el SARIF a GitHub
+
+      - name: Upload Gitleaks SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: "${{ github.workspace }}/gitleaks.sarif"
+          category: "/language:secrets-gitleaks"
+
+  # ----------------------------------------------------
+  # Job 2: Análisis Estático de Código (CodeQL & Roslyn)
+  # ----------------------------------------------------
   analyze-quality:
     name: "CodeQL & Roslyn Quality Gate"
     runs-on: ubuntu-latest
@@ -38,8 +73,8 @@ jobs:
 
       - name: Build & Generate Roslyn SARIF
         run: |
-            dotnet restore src/QualityLab.Api/QualityLab.Api.csproj
-            dotnet build src/QualityLab.Api/QualityLab.Api.csproj --configuration Release --no-restore
+          dotnet restore src/QualityLab.Api/QualityLab.Api.csproj
+          dotnet build src/QualityLab.Api/QualityLab.Api.csproj --configuration Release --no-restore
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
