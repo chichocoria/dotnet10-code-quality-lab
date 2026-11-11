@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -23,11 +24,24 @@ app.MapGet("/ping", (string host) =>
 {
     try
     {
-        // Vulnerabilidad intencional para que CodeQL la marque en el PR
-        var process = Process.Start("bash", $"-c \"ping -c 1 {host}\"");
+        if (string.IsNullOrWhiteSpace(host) || !Regex.IsMatch(host, @"^[a-zA-Z0-9\.\-:]+$"))
+        {
+            return Results.BadRequest("Host inválido.");
+        }
+
+        var startInfo = new ProcessStartInfo("ping")
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+        startInfo.ArgumentList.Add("-c");
+        startInfo.ArgumentList.Add("1");
+        startInfo.ArgumentList.Add(host);
+
+        var process = Process.Start(startInfo);
         return Results.Ok($"Ping enviado a {host}");
     }
-    catch (Exception ex)
+    catch (Exception)
     {
         // Mala práctica: Catch genérico que silencia el error sin logging
         return Results.BadRequest();
