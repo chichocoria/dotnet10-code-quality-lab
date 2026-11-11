@@ -38,8 +38,11 @@ jobs:
 
       - name: Build & Generate Roslyn SARIF
         run: |
-          dotnet restore src/QualityLab.Api/QualityLab.Api.csproj
-          dotnet build src/QualityLab.Api/QualityLab.Api.csproj --configuration Release --no-restore /p:ErrorLog="${{ github.workspace }}/roslyn-analysis.sarif,version=2.1"
+                dotnet restore src/QualityLab.Api/QualityLab.Api.csproj
+                dotnet build src/QualityLab.Api/QualityLab.Api.csproj \
+                  --configuration Release \
+                  --no-restore \
+                  -p:ErrorLog="${{ github.workspace }}/roslyn-analysis.sarif;version=2.1"
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
