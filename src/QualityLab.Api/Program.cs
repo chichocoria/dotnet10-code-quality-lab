@@ -38,7 +38,7 @@ app.MapGet("/ping", (string host) =>
         startInfo.ArgumentList.Add("1");
         startInfo.ArgumentList.Add(host);
 
-        var process = Process.Start(startInfo);
+        Process.Start(startInfo);
         return Results.Ok($"Ping enviado a {host}");
     }
     catch (Exception)
